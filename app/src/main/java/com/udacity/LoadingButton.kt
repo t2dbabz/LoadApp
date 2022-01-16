@@ -1,10 +1,13 @@
 package com.udacity
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.content.withStyledAttributes
@@ -24,6 +27,7 @@ class LoadingButton @JvmOverloads constructor(
 
 
 
+
     private var buttonBackgroundColor = ContextCompat.getColor(context, R.color.colorPrimary)
     private var buttonAnimationColor = ContextCompat.getColor(context, R.color.colorPrimaryDark)
     private var circleAnimationColor = ContextCompat.getColor(context, R.color.colorAccent)
@@ -35,6 +39,9 @@ class LoadingButton @JvmOverloads constructor(
     private var buttonAnimationRect  = RectF()
     private var circleAnimationRect  = RectF()
     private var textBound  = Rect()
+
+    private val animationDuration = 3000L
+    private var progress = 0f
 
 
     private val buttonTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -66,9 +73,46 @@ class LoadingButton @JvmOverloads constructor(
     }
 
 
-    private val valueAnimator = ValueAnimator()
+    private val valueAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+        duration = animationDuration
+        interpolator = LinearInterpolator()
+        addUpdateListener {
+            progress = it.animatedValue as Float
+            invalidate()
+        }
+        addListener(object: AnimatorListenerAdapter() {
+            override fun onAnimationStart(animation: Animator?) {
+                buttonState = ButtonState.Loading
+                this@LoadingButton.isEnabled = false
+            }
 
-    private var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, newState ->
+            override fun onAnimationEnd(animation: Animator?) {
+                buttonState = ButtonState.Completed
+                this@LoadingButton.isEnabled = true
+            }
+        })
+    }
+
+
+     var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, newState ->
+
+        when (newState) {
+            ButtonState.Loading -> {
+                buttonText = "We are Loading"
+                invalidate()
+
+            }
+            ButtonState.Clicked -> {
+                valueAnimator.start()
+                invalidate()
+            }
+
+            ButtonState.Completed -> {
+                valueAnimator.cancel()
+                buttonText = "Download"
+                invalidate()
+            }
+        }
 
     }
 
@@ -85,7 +129,7 @@ class LoadingButton @JvmOverloads constructor(
             buttonTextPaint.getTextBounds(buttonText, 0, buttonText.length, textBound)
             val radius = textBound.height().toFloat()
             canvas.translate((widthSize + textWidth + radius) / 2f, heightSize / 2f - radius / 2)
-            canvas.drawArc(0f, 0f, radius, radius, 0f, 360f * 0.3f, true, circleAnimationPaint)
+            canvas.drawArc(0f, 0f, radius, radius, 0f, 360f * progress, true, circleAnimationPaint)
         }
 
     }
@@ -103,9 +147,16 @@ class LoadingButton @JvmOverloads constructor(
     }
 
     private fun drawBackground(canvas: Canvas) {
-        buttonBackgroundRect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
-        canvas.drawRect(buttonBackgroundRect, buttonBackgroundPaint)
+        if(buttonState == ButtonState.Loading){
+            buttonBackgroundRect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+            canvas.drawRect(buttonBackgroundRect, buttonBackgroundPaint)
 
+            buttonAnimationRect.set(0f, 0f, widthSize * progress, heightSize.toFloat())
+            canvas.drawRect(buttonAnimationRect, buttonAnimationPaint)
+        } else {
+            buttonBackgroundRect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
+            canvas.drawRect(buttonBackgroundRect, buttonBackgroundPaint)
+        }
     }
 
 
