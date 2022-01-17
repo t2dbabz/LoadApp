@@ -2,7 +2,6 @@ package com.udacity
 
 import android.app.DownloadManager
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,7 +10,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import com.udacity.util.createDownloadNotificationChannel
+import com.udacity.util.sendDownloadComplete
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -21,14 +22,15 @@ class MainActivity : AppCompatActivity() {
     private var downloadID: Long = 0
 
     private lateinit var notificationManager: NotificationManager
-    private lateinit var pendingIntent: PendingIntent
-    private lateinit var action: NotificationCompat.Action
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        notificationManager = ContextCompat.getSystemService(applicationContext, NotificationManager::class.java) as NotificationManager
+
+        createDownloadNotificationChannel(applicationContext)
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
         custom_button.setOnClickListener {
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (downloadID == id) {
+                custom_button.buttonState = ButtonState.Completed
                 val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
                 val query = DownloadManager.Query()
                 query.setFilterById(id)
@@ -68,6 +71,7 @@ class MainActivity : AppCompatActivity() {
                     val fileDescription = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_DESCRIPTION))
 
 
+                    notificationManager.sendDownloadComplete(fileName, fileDescription, status, applicationContext)
 
                 }
             }
@@ -89,8 +93,8 @@ class MainActivity : AppCompatActivity() {
 
             when (downloadURL) {
                 LOAD_APP_URL -> {
-                    request.setTitle(getString(R.string.app_name))
-                    request.setDescription(getString(R.string.app_description))
+                    request.setTitle(getString(R.string.load_app))
+                    request.setDescription(getString(R.string.load_app_description))
                 }
 
                 GLIDE_URL -> {
