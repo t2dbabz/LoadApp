@@ -19,26 +19,25 @@ class LoadingButton @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_BUTTON_TEXT = "Download"
+        private const val ANIMATION_TEXT = "We are loading"
     }
     private var widthSize = 0
     private var heightSize = 0
     private var textWidth = 0f
 
 
-
-
-
     private var buttonBackgroundColor = ContextCompat.getColor(context, R.color.colorPrimary)
     private var buttonAnimationColor = ContextCompat.getColor(context, R.color.colorPrimaryDark)
     private var circleAnimationColor = ContextCompat.getColor(context, R.color.colorAccent)
-    private var defaultButtonText: CharSequence = ""
+    private var textColor = ContextCompat.getColor(context, R.color.white)
+    private var defaultButtonText = DEFAULT_BUTTON_TEXT
     private var buttonText = DEFAULT_BUTTON_TEXT
+    private var animatedButtonText = ANIMATION_TEXT
 
 
     private var buttonBackgroundRect = RectF()
-    private var buttonAnimationRect  = RectF()
-    private var circleAnimationRect  = RectF()
-    private var textBound  = Rect()
+    private var buttonAnimationRect = RectF()
+    private var textBound = Rect()
 
     private val animationDuration = 3000L
     private var progress = 0f
@@ -49,7 +48,7 @@ class LoadingButton @JvmOverloads constructor(
         textAlign = Paint.Align.LEFT
         textSize = 55f
         typeface = Typeface.DEFAULT
-        color = Color.WHITE
+        color = textColor
     }
 
     private val buttonBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -69,6 +68,16 @@ class LoadingButton @JvmOverloads constructor(
 
 
     init {
+        context.withStyledAttributes(attrs, R.styleable.LoadingButton) {
+            buttonAnimationColor = getColor(R.styleable.LoadingButton_animationColor, Color.BLACK)
+            buttonBackgroundColor =
+                getColor(R.styleable.LoadingButton_backgroundColor, Color.DKGRAY)
+            circleAnimationColor =
+                getColor(R.styleable.LoadingButton_circleColor, Color.GRAY)
+
+            textColor = getColor(R.styleable.LoadingButton_textColor, Color.WHITE)
+        }
+
 
     }
 
@@ -98,18 +107,19 @@ class LoadingButton @JvmOverloads constructor(
 
         when (newState) {
             ButtonState.Loading -> {
-                buttonText = "We are Loading"
+                buttonText = animatedButtonText
                 invalidate()
 
             }
             ButtonState.Clicked -> {
+
                 valueAnimator.start()
                 invalidate()
             }
 
             ButtonState.Completed -> {
                 valueAnimator.cancel()
-                buttonText = "Download"
+                buttonText = defaultButtonText
                 invalidate()
             }
         }
