@@ -26,7 +26,13 @@
     <string name="channel_name">Downloads</string>
     <string name="channel_description">All notification related to downloads shown on this channel</string>
     <string name="channel_id">channel_downloads</string>
-    <string name="file_name">File Name:   %1$s</string>
-    <string name="status">Status:            %1$s</string>
+    <string name="file_name">File Name:</string>
+    <string name="status">Status: </string>
+    <string name="fileName_description">%1$s - %2$s </string>
+    <string name="ok">OK</string>
+    <string name="success">Success</string>
+    <string name="failed">Failed</string>
+    <string name="unknown">Unknown</string>
+
 
 </resources>
