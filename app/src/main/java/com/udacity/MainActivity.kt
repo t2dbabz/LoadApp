@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.udacity.databinding.ActivityMainBinding
 import com.udacity.util.createDownloadNotificationChannel
 import com.udacity.util.sendDownloadComplete
 import kotlinx.android.synthetic.main.activity_main.*
@@ -22,19 +23,21 @@ class MainActivity : AppCompatActivity() {
     private var downloadID: Long = 0
 
     private lateinit var notificationManager: NotificationManager
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         notificationManager = ContextCompat.getSystemService(applicationContext, NotificationManager::class.java) as NotificationManager
 
         createDownloadNotificationChannel(applicationContext)
         registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
-        custom_button.setOnClickListener {
-            custom_button.buttonState = ButtonState.Clicked
+        binding.mainContainer.customButton.setOnClickListener {
+            binding.mainContainer.customButton.buttonState = ButtonState.Clicked
 
             val downloadURL = when (downloadGroup.checkedRadioButtonId) {
                 glide_download.id -> GLIDE_URL
@@ -50,9 +53,9 @@ class MainActivity : AppCompatActivity() {
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            binding.mainContainer.customButton.buttonState = ButtonState.Completed
             val id = intent?.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (downloadID == id) {
-                custom_button.buttonState = ButtonState.Completed
                 val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
                 val query = DownloadManager.Query()
                 query.setFilterById(id)
@@ -61,9 +64,9 @@ class MainActivity : AppCompatActivity() {
                 if (cursor.moveToFirst()) {
 
                     val status = when (cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))) {
-                        DownloadManager.STATUS_SUCCESSFUL -> "Success"
-                        DownloadManager.STATUS_FAILED -> "Error"
-                        else -> "Unknown"
+                        DownloadManager.STATUS_SUCCESSFUL -> getString(R.string.success)
+                        DownloadManager.STATUS_FAILED -> getString(R.string.failed)
+                        else -> getString(R.string.unknown)
                     }
 
                     val fileName = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TITLE))
@@ -116,7 +119,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
 
 
     companion object {

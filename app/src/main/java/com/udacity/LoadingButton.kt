@@ -21,6 +21,7 @@ class LoadingButton @JvmOverloads constructor(
         private const val DEFAULT_BUTTON_TEXT = "Download"
         private const val ANIMATION_TEXT = "We are loading"
     }
+
     private var widthSize = 0
     private var heightSize = 0
     private var textWidth = 0f
@@ -89,7 +90,7 @@ class LoadingButton @JvmOverloads constructor(
             progress = it.animatedValue as Float
             invalidate()
         }
-        addListener(object: AnimatorListenerAdapter() {
+        addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator?) {
                 buttonState = ButtonState.Loading
                 this@LoadingButton.isEnabled = false
@@ -103,7 +104,7 @@ class LoadingButton @JvmOverloads constructor(
     }
 
 
-     var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, newState ->
+    var buttonState: ButtonState by Delegates.observable<ButtonState>(ButtonState.Completed) { p, old, newState ->
 
         when (newState) {
             ButtonState.Loading -> {
@@ -112,7 +113,6 @@ class LoadingButton @JvmOverloads constructor(
 
             }
             ButtonState.Clicked -> {
-
                 valueAnimator.start()
                 invalidate()
             }
@@ -141,11 +141,10 @@ class LoadingButton @JvmOverloads constructor(
             canvas.translate((widthSize + textWidth + radius) / 2f, heightSize / 2f - radius / 2)
             canvas.drawArc(0f, 0f, radius, radius, 0f, 360f * progress, true, circleAnimationPaint)
         }
-
     }
 
     private fun drawButtonText(canvas: Canvas) {
-         textWidth = buttonTextPaint.measureText(buttonText)
+        textWidth = buttonTextPaint.measureText(buttonText)
 
         canvas.drawText(
             buttonText,
@@ -153,11 +152,10 @@ class LoadingButton @JvmOverloads constructor(
             (heightSize - (buttonTextPaint.ascent() + buttonTextPaint.descent())) / 2f,
             buttonTextPaint
         )
-
     }
 
     private fun drawBackground(canvas: Canvas) {
-        if(buttonState == ButtonState.Loading){
+        if (buttonState == ButtonState.Loading) {
             buttonBackgroundRect.set(0f, 0f, widthSize.toFloat(), heightSize.toFloat())
             canvas.drawRect(buttonBackgroundRect, buttonBackgroundPaint)
 
